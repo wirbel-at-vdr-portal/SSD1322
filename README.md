@@ -10,8 +10,25 @@ In my case, this is done by 4 resistors:
 - R19, R21 soldered
 - R18, R20 not soldered
 
-The lib is loosely adopted from other Adafruit GFX based libraries and optimized to just contain as much code as necessary.
 
+# 4-wire SPI (R19,R21 USE, R18,R20 DONT USE)
+| Pin   | Symbol | Level      | Function                    |
+| ----- | ----- | ----------- | --------------------------- |
+|  1    | GND   | 0V          | Power Ground                |
+|  2    | VDD   | +3.3V~+5.0V | Power Supply for Logic      |
+|  3    | NC    | (-)         | do no connect               |
+|  4    | SCLK  | H/L         | SPI Clock                   |
+|  5    | SDIN  | H/L         | SPI MOSI (data from master) |
+|  6    | NC    | (-)         | do no connect               |
+|  7~11 | D3~D7 | 0V          | Power Ground                |
+|  12   | RD    | 0V          | Power Ground                |
+|  13   | WR    | 0V          | Power Ground                |
+|  14   | D/C   | H/L         | H: data, L:command          |
+|  15   | /RST  | H/L         | L: reset                    |
+|  16   | /CS   | H/L         | L: select SSD1322           |
+
+
+The lib is loosely adopted from other Adafruit GFX based libraries and optimized to just contain as much code as necessary.
 Feel free to use it.
 
 Winfried
