@@ -17,6 +17,10 @@ In my case, this is done by 4 resistors:
 - R19, R21 soldered
 - R18, R20 not soldered
 
+**Be careful, the SSD1322 has max 3.5V I/O voltage.**
+
+Do not connect to 5V based Arduinos, i'm using an Teensy 3.2 
+
 | Pin   | Symbol | Level      | Function                    | Wire Color   |
 | ----- | ----- | ----------- | --------------------------- | ------------ |
 |  1    | GND   | 0V          | Power Ground                | blue         |
