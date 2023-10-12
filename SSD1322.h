@@ -22,7 +22,7 @@
 
 /* You have the choice here.
  * - 4 bit per pixel takes more memory for the display buffer, but gives
- *   16 gray scale values. 1 bit per pixel is
+ *   16 gray scale values.
  * - 1 bit per pixel is more light weight and the gray scale values
  *   doesnt make too much sense usually.
  */
