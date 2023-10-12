@@ -22,7 +22,7 @@ In my case, this is done by 4 resistors:
 Do not connect to 5V based Arduinos, i'm using an Teensy 3.2 
 
 | Pin   | Symbol | Level      | Function                    | Wire Color   |
-| ----- | ----- | ----------- | --------------------------- | ------------ |
+| :---: | :---: | :---------: | :-------------------------- | :----------- |
 |  1    | GND   | 0V          | Power Ground                | blue         |
 |  2    | VDD   | +3.3V~+5.0V | Power Supply for Logic      | red          |
 |  3    | NC    | (-)         | do no connect               |              |
