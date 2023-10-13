@@ -275,7 +275,7 @@ void SSD1322::invertDisplay(bool i) {
 /*******************************************************************************
  * private internals.
  ******************************************************************************/
-void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t color) {
+void SSD1322::horizontal_line(int16_t x, int16_t y, int16_t w, uint16_t color) {
   if (y < 0 || y >= HEIGHT)
      return;
 
@@ -384,7 +384,7 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
   #endif
 }
 
-void SSD1322::drawFastVLineInternal(int16_t x, int16_t Y, int16_t H, uint16_t color) {
+void SSD1322::vertical_line(int16_t x, int16_t Y, int16_t H, uint16_t color) {
   if (x < 0 || x >= WIDTH)
      return;
 
@@ -442,7 +442,7 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
   color &= 0x0F;
   switch(rotation) {
      case 0:
-        drawFastVLineInternal(x, y, h, color);
+        vertical_line(x, y, h, color);
         break;
      case 1:
         /* 90 degree rotation
@@ -452,7 +452,7 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
         std::swap(x, y);
         x = WIDTH - x - 1;
         x -= (h - 1);
-        drawFastHLineInternal(x, y, h, color);
+        horizontal_line(x, y, h, color);
         break;
      case 2:
         /* 180 degree rotation
@@ -462,7 +462,7 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
         x = WIDTH - x - 1;
         y = HEIGHT - y - 1;
         y -= (h - 1);
-        drawFastVLineInternal(x, y, h, color);
+        vertical_line(x, y, h, color);
         break;
      case 3:
         /* 270 degree rotation
@@ -471,7 +471,7 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
          */
         std::swap(x, y);
         y = HEIGHT - y - 1;
-        drawFastHLineInternal(x, y, h, color);
+        horizontal_line(x, y, h, color);
         break;
      }
 }
@@ -479,7 +479,7 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
 void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
   switch(rotation) {
      case 0:
-        drawFastHLineInternal(x, y, w, color);
+        horizontal_line(x, y, w, color);
         break;
      case 1:
         /* 90 degree rotation,
@@ -488,7 +488,7 @@ void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
          */
         std::swap(x, y);
         x = WIDTH - x - 1;
-        drawFastVLineInternal(x, y, w, color);
+        vertical_line(x, y, w, color);
         break;
      case 2:
         /* 180 degree rotation,
@@ -498,7 +498,7 @@ void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
         x = WIDTH - x - 1;
         y = HEIGHT - y - 1;
         x -= (w - 1);
-        drawFastHLineInternal(x, y, w, color);
+        horizontal_line(x, y, w, color);
         break;
      case 3:
         /* 270 degree rotation,
@@ -508,7 +508,7 @@ void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
         std::swap(x, y);
         y = HEIGHT - y - 1;
         y -= (w - 1);
-        drawFastVLineInternal(x, y, w, color);
+        vertical_line(x, y, w, color);
         break;
      }
 }
