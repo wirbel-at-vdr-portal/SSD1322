@@ -439,19 +439,20 @@ void SSD1322::drawFastVLineInternal(int16_t x, int16_t Y, int16_t H, uint16_t co
  * It's good to implement those, even if using transaction API
  ******************************************************************************/
 void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
-  bool bSwap = false;
+  color &= 0x0F;
   switch(rotation) {
      case 0:
+        drawFastVLineInternal(x, y, h, color);
         break;
      case 1:
         /* 90 degree rotation
          * swap x & y for rotation,
          * then invert x and adjust x for h (now to become w)
          */
-        bSwap = true;
         std::swap(x, y);
         x = WIDTH - x - 1;
         x -= (h - 1);
+        drawFastHLineInternal(x, y, h, color);
         break;
      case 2:
         /* 180 degree rotation
@@ -461,37 +462,33 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
         x = WIDTH - x - 1;
         y = HEIGHT - y - 1;
         y -= (h - 1);
+        drawFastVLineInternal(x, y, h, color);
         break;
      case 3:
         /* 270 degree rotation
          * swap x & y for rotation,
          * then invert y
          */
-        bSwap = true;
         std::swap(x, y);
         y = HEIGHT - y - 1;
+        drawFastHLineInternal(x, y, h, color);
         break;
      }
-
-  if (bSwap)
-     drawFastHLineInternal(x, y, h, color);
-  else
-     drawFastVLineInternal(x, y, h, color);
 }
 
 void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
-  boolean bSwap = false;
   switch(rotation) {
      case 0:
+        drawFastHLineInternal(x, y, w, color);
         break;
      case 1:
         /* 90 degree rotation,
          * swap x & y for rotation,
          * then invert x
          */
-        bSwap = true;
         std::swap(x, y);
         x = WIDTH - x - 1;
+        drawFastVLineInternal(x, y, w, color);
         break;
      case 2:
         /* 180 degree rotation,
@@ -501,23 +498,19 @@ void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
         x = WIDTH - x - 1;
         y = HEIGHT - y - 1;
         x -= (w - 1);
+        drawFastHLineInternal(x, y, w, color);
         break;
      case 3:
         /* 270 degree rotation,
          * swap x & y for rotation,
          * then invert y  and adjust y for w (not to become h)
          */
-        bSwap = true;
         std::swap(x, y);
         y = HEIGHT - y - 1;
         y -= (w - 1);
+        drawFastVLineInternal(x, y, w, color);
         break;
      }
-
-  if (bSwap)
-     drawFastVLineInternal(x, y, w, color);
-  else
-     drawFastHLineInternal(x, y, w, color);
 }
 
 //void SSD1322::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
