@@ -183,9 +183,15 @@ void SSD1322::begin(bool reset) {
 
   Command(EXIT_PARTIAL_DISPLAY);                  // 10.1.11 Exit Partial Display
 
+  Command(SET_DISPLAY_ON);                        // 10.1.13 Set Display ON/OFF
+
   fillScreen(BLACK);                              // Clear image ram
 
-  Command(SET_DISPLAY_ON);                        // 10.1.13 Set Display ON/OFF
+  // print some text to make user happy :)
+  setTextSize(2);
+  setTextColor(WHITE);
+  println("SSD1322");
+  update();
 }
 
 
@@ -197,7 +203,7 @@ void SSD1322::begin(bool reset) {
  *   color  16-bit pixel color.
  ******************************************************************************/
 void SSD1322::drawPixel(int16_t x, int16_t y, uint16_t color) {
-  switch(getRotation()) {
+  switch(rotation) {
      case 0: //  0 degree rotation
         break;
      case 1: // 90 degree rotation
@@ -339,7 +345,7 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
 
      if (((x % 2) == 0) && ((w % 2) == 0)) {
         // Start at even and length is even
-        while (byteLen--)
+        while(byteLen--)
            *p++ = fullmask;
         return;
         }
@@ -349,14 +355,14 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
         register uint8_t b1 = *p;
         b1 &= (x % 2) ? 0xF0 : 0x0F;
         *p++ = b1 | oddmask;
-        while (byteLen--)
+        while(byteLen--)
            *p++ = fullmask;
         return;
         }
 
      if (((x % 2) == 0) && ((w % 2) == 1)) {
         // Start at even and length is odd
-        while (byteLen--)
+        while(byteLen--)
            *p++ = fullmask;
         register uint8_t b1 = *p;
         b1 &= 0x0F; // cleardown nibble to be replaced
@@ -368,7 +374,7 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
         register uint8_t b1 = *p;
         b1 &= (x % 2) ? 0xF0 : 0x0F;
         *p++ = b1 | oddmask;
-        while (byteLen--)
+        while(byteLen--)
            *p++ = fullmask;
         b1 = *p;
         b1 &= 0x0F;
@@ -412,7 +418,6 @@ void SSD1322::drawFastVLineInternal(int16_t x, int16_t Y, int16_t H, uint16_t co
         p += LCD_WIDTH / 8;
         }
   #elif (BITS_PER_PIXEL == 4)
-     // set up the pointer for fast movement through the buffer
      register uint8_t* p = buffer;
      p += (x >> 1) + (y  * (LCD_WIDTH / 2));
 
@@ -420,7 +425,7 @@ void SSD1322::drawFastVLineInternal(int16_t x, int16_t Y, int16_t H, uint16_t co
      register uint8_t mask = ((x % 2) ? color : color << 4);
      while(h--) {
         register uint8_t b1 = *p;
-        b1 &= (x % 2) ? 0xF0 : 0x0F; // cleardown nibble to be replaced
+        b1 &= (x % 2) ? 0xF0 : 0x0F; // clear nibble to be updated
         *p = b1 | mask;
         p += LCD_WIDTH / 2;
         }
@@ -476,7 +481,7 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
 
 void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
   boolean bSwap = false;
-  switch (rotation) {
+  switch(rotation) {
      case 0:
         break;
      case 1:
@@ -498,15 +503,15 @@ void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
         x -= (w - 1);
         break;
      case 3:
-       /* 270 degree rotation,
-        * swap x & y for rotation,
-        * then invert y  and adjust y for w (not to become h)
-        */
-       bSwap = true;
-       std::swap(x, y);
-       y = HEIGHT - y - 1;
-       y -= (w - 1);
-       break;
+        /* 270 degree rotation,
+         * swap x & y for rotation,
+         * then invert y  and adjust y for w (not to become h)
+         */
+        bSwap = true;
+        std::swap(x, y);
+        y = HEIGHT - y - 1;
+        y -= (w - 1);
+        break;
      }
 
   if (bSwap)
