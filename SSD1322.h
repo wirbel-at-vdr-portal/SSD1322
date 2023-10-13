@@ -32,7 +32,7 @@
 
 class SSD1322 : public Adafruit_GFX {
 private:
-  uint8_t buffer[LCD_HEIGHT * LCD_WIDTH / (8 / BITS_PER_PIXEL)];
+  uint8_t buffer[(LCD_HEIGHT * LCD_WIDTH * BITS_PER_PIXEL) / 8];
   int8_t mosi, sck, dc, rst, cs;
 
   void Command(uint8_t cmd);
