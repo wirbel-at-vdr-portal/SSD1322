@@ -289,7 +289,7 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
 
   // set up the pointer for  movement through the buffer
   #if (BITS_PER_PIXEL == 1)
-     register uint8_t* pBuf = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
+     register uint8_t* p = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
      register uint8_t mod = (x % 8);
      if (mod) {
         mod = 8-mod;
@@ -299,20 +299,20 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
            mask &= (0XFF << (mod - w));
            }
         if (color > 7)
-           *pBuf |=  mask;
+           *p |=  mask;
         else
-           *pBuf &= ~mask;
+           *p &= ~mask;
         if (w < mod)
            return;
         w -= mod;
-        pBuf++;
+        p++;
         }
 
      // write solid bytes while we can - effectively doing 8 rows at a time
      if (w >= 8) {
         register uint8_t val = (color > 7) ? 255 : 0;
         do {
-           *pBuf++ = val;
+           *p++ = val;
            w -= 8;
            }
         while(w >= 8);
@@ -322,14 +322,14 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
       static uint8_t postmask[8] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
       register uint8_t mask = postmask[mod];
       if (color > 7)
-         *pBuf |=  mask;
+         *p |=  mask;
       else
-         *pBuf &= ~mask;
+         *p &= ~mask;
       }
   #elif (BITS_PER_PIXEL == 4)
      // adjust the buffer pointer for the current row
-     register uint8_t* pBuf = buffer;
-     pBuf += (x >> 1) + (y * (LCD_WIDTH / 2));
+     register uint8_t* p = buffer;
+     p += (x >> 1) + (y * (LCD_WIDTH / 2));
 
      color &= 0x0F;
      register uint8_t oddmask = color;
@@ -340,39 +340,39 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
      if (((x % 2) == 0) && ((w % 2) == 0)) {
         // Start at even and length is even
         while (byteLen--)
-           *pBuf++ = fullmask;
+           *p++ = fullmask;
         return;
         }
 
      if (((x % 2) == 1) && ((w % 2) == 1)) {
         // Start at odd and length is odd
-        register uint8_t b1 = *pBuf;
+        register uint8_t b1 = *p;
         b1 &= (x % 2) ? 0xF0 : 0x0F;
-        *pBuf++ = b1 | oddmask;
+        *p++ = b1 | oddmask;
         while (byteLen--)
-           *pBuf++ = fullmask;
+           *p++ = fullmask;
         return;
         }
 
      if (((x % 2) == 0) && ((w % 2) == 1)) {
         // Start at even and length is odd
         while (byteLen--)
-           *pBuf++ = fullmask;
-        register uint8_t b1 = *pBuf;
+           *p++ = fullmask;
+        register uint8_t b1 = *p;
         b1 &= 0x0F; // cleardown nibble to be replaced
-        *pBuf++ = b1 | evenmask;
+        *p++ = b1 | evenmask;
         return;
         }
 
      if (((x % 2) == 1) && ((w % 2) == 0)) { // Start at odd and length is even
-        register uint8_t b1 = *pBuf;
+        register uint8_t b1 = *p;
         b1 &= (x % 2) ? 0xF0 : 0x0F;
-        *pBuf++ = b1 | oddmask;
+        *p++ = b1 | oddmask;
         while (byteLen--)
-           *pBuf++ = fullmask;
-        b1 = *pBuf;
+           *p++ = fullmask;
+        b1 = *p;
         b1 &= 0x0F;
-        *pBuf++ = b1 | evenmask;
+        *p++ = b1 | evenmask;
         return;
         }
   #endif
@@ -397,21 +397,8 @@ void SSD1322::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h, uint16_
   register uint8_t y = __y;
   register uint8_t h = __h;
 
-  #if (BITS_PER_PIXEL == 4)
-     // set up the pointer for fast movement through the buffer
-     register uint8_t* pBuf = buffer;
-     pBuf += (x >> 1) + (y  * (LCD_WIDTH / 2));
-
-     color &= 0x0F;
-     register uint8_t mask = ((x % 2) ? color : color << 4);
-     while(h--) {
-        register uint8_t b1 = *pBuf;
-        b1 &= (x % 2) ? 0xF0 : 0x0F; // cleardown nibble to be replaced
-        *pBuf = b1 | mask;
-        pBuf += LCD_WIDTH / 2;
-        }
-  #elif (BITS_PER_PIXEL == 1)
-     register uint8_t* pBuf = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
+  #if (BITS_PER_PIXEL == 1)
+     register uint8_t* p = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
      register uint8_t mod = (x % 8);
 
      static uint8_t postmask[8] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
@@ -419,10 +406,23 @@ void SSD1322::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h, uint16_
 
      while(h--) {
         if (color > 7)
-           *pBuf |=  mask;
+           *p |=  mask;
         else
-           *pBuf &= ~mask;
-        pBuf += LCD_WIDTH / 8;
+           *p &= ~mask;
+        p += LCD_WIDTH / 8;
+        }
+  #elif (BITS_PER_PIXEL == 4)
+     // set up the pointer for fast movement through the buffer
+     register uint8_t* p = buffer;
+     p += (x >> 1) + (y  * (LCD_WIDTH / 2));
+
+     color &= 0x0F;
+     register uint8_t mask = ((x % 2) ? color : color << 4);
+     while(h--) {
+        register uint8_t b1 = *p;
+        b1 &= (x % 2) ? 0xF0 : 0x0F; // cleardown nibble to be replaced
+        *p = b1 | mask;
+        p += LCD_WIDTH / 2;
         }
   #endif
 }
