@@ -337,7 +337,6 @@ void SSD1322::horizontal_line(int16_t x, int16_t y, int16_t w, uint16_t color) {
      register uint8_t* p = buffer;
      p += (x >> 1) + (y * (LCD_WIDTH / 2));
 
-     color &= 0x0F;
      register uint8_t oddmask = color;
      register uint8_t evenmask = (color << 4);
      register uint8_t fullmask = (color << 4) + color;
@@ -421,7 +420,6 @@ void SSD1322::vertical_line(int16_t x, int16_t Y, int16_t H, uint16_t color) {
      register uint8_t* p = buffer;
      p += (x >> 1) + (y  * (LCD_WIDTH / 2));
 
-     color &= 0x0F;
      register uint8_t mask = ((x % 2) ? color : color << 4);
      while(h--) {
         register uint8_t b1 = *p;
@@ -440,75 +438,80 @@ void SSD1322::vertical_line(int16_t x, int16_t Y, int16_t H, uint16_t color) {
  ******************************************************************************/
 void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
   color &= 0x0F;
+  uint8_t X = x & 0xFF, Y = y & 0xFF, H = h & 0xFF; // limit to byte range
+
   switch(rotation) {
      case 0:
-        vertical_line(x, y, h, color);
+        vertical_line(X, Y, H, color);
         break;
      case 1:
         /* 90 degree rotation
          * swap x & y for rotation,
          * then invert x and adjust x for h (now to become w)
          */
-        std::swap(x, y);
-        x = WIDTH - x - 1;
-        x -= (h - 1);
-        horizontal_line(x, y, h, color);
+        std::swap(X, Y);
+        X = WIDTH - X - 1;
+        X -= (H - 1);
+        horizontal_line(X, Y, H, color);
         break;
      case 2:
         /* 180 degree rotation
          * invert x and y,
          * then shift y around for height.
          */
-        x = WIDTH - x - 1;
-        y = HEIGHT - y - 1;
-        y -= (h - 1);
-        vertical_line(x, y, h, color);
+        X = WIDTH - X - 1;
+        Y = HEIGHT - Y - 1;
+        Y -= (H - 1);
+        vertical_line(X, Y, H, color);
         break;
      case 3:
         /* 270 degree rotation
          * swap x & y for rotation,
          * then invert y
          */
-        std::swap(x, y);
-        y = HEIGHT - y - 1;
-        horizontal_line(x, y, h, color);
+        std::swap(X, Y);
+        Y = HEIGHT - Y - 1;
+        horizontal_line(X, Y, H, color);
         break;
      }
 }
 
 void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
+  color &= 0x0F;
+  uint8_t X = x & 0xFF, Y = y & 0xFF, H = h & 0xFF; // limit to byte range
+
   switch(rotation) {
      case 0:
-        horizontal_line(x, y, w, color);
+        horizontal_line(X, Y, W, color);
         break;
      case 1:
         /* 90 degree rotation,
          * swap x & y for rotation,
          * then invert x
          */
-        std::swap(x, y);
-        x = WIDTH - x - 1;
-        vertical_line(x, y, w, color);
+        std::swap(X, Y);
+        X = WIDTH - X - 1;
+        vertical_line(X, Y, W, color);
         break;
      case 2:
         /* 180 degree rotation,
          * invert x and y
          * then shift y around for height.
          */
-        x = WIDTH - x - 1;
-        y = HEIGHT - y - 1;
-        x -= (w - 1);
-        horizontal_line(x, y, w, color);
+        X = WIDTH - X - 1;
+        Y = HEIGHT - Y - 1;
+        X -= (W - 1);
+        horizontal_line(X, Y, W, color);
         break;
      case 3:
         /* 270 degree rotation,
          * swap x & y for rotation,
          * then invert y  and adjust y for w (not to become h)
          */
-        std::swap(x, y);
-        y = HEIGHT - y - 1;
-        y -= (w - 1);
-        vertical_line(x, y, w, color);
+        std::swap(X, Y);
+        Y = HEIGHT - Y - 1;
+        Y -= (W - 1);
+        vertical_line(X, Y, W, color);
         break;
      }
 }
