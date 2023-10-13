@@ -15,7 +15,7 @@
 
 #define BLACK        0x00
 #define WHITE        0x0F
-#define INVERSE      2
+
 #define LCD_WIDTH    256
 #define LCD_HEIGHT   64
 

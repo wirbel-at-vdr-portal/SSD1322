@@ -219,12 +219,12 @@ void SSD1322::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
   #if (BITS_PER_PIXEL == 1)
      register uint8_t* p = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
-     switch(color) {
-        case WHITE:   *p |=  (0x80 >> (x%8)); break;
-        case BLACK:   *p &= ~(0x80 >> (x%8)); break;
-        case INVERSE: *p ^=  (0x80 >> (x%8)); break;
-        }
+     if (color > 7)
+        *p |=  (0x80 >> (x%8));
+     else
+        *p &= ~(0x80 >> (x%8));
   #elif (BITS_PER_PIXEL == 4)
+     color &= 0x0F;
      register uint8_t mask = ((x % 2) ? color : color << 4);
      register uint8_t* p = &buffer[(x >> 1) + (y * (LCD_WIDTH / 2))];
      register uint8_t b1 = *p;
@@ -293,6 +293,7 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
      register uint8_t* pBuf = buffer;
      pBuf += (x >> 1) + (y * (LCD_WIDTH / 2));
 
+     color &= 0x0F;
      register uint8_t oddmask = color;
      register uint8_t evenmask = (color << 4);
      register uint8_t fullmask = (color << 4) + color;
@@ -346,11 +347,10 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
         if (w < mod) {
            mask &= (0XFF << (mod - w));
            }
-        switch(color) {
-           case WHITE:   *pBuf |=  mask;  break;
-           case BLACK:   *pBuf &= ~mask;  break;
-           case INVERSE: *pBuf ^=  mask;  break;
-           }
+        if (color > 7)
+           *pBuf |=  mask;
+        else
+           *pBuf &= ~mask;
         if (w < mod)
            return;
         w -= mod;
@@ -359,33 +359,21 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
 
      // write solid bytes while we can - effectively doing 8 rows at a time
      if (w >= 8) {
-        if (color == INVERSE) {
-           do {
-              *pBuf = ~(*pBuf);
-              // adjust the buffer forward
-              pBuf++;
-              w -= 8;
-              }
-           while(w >= 8);
+        register uint8_t val = (color > 7) ? 255 : 0;
+        do {
+           *pBuf++ = val;
+           w -= 8;
            }
-        else {
-           register uint8_t val = (color == WHITE) ? 255 : 0;
-           do {
-              *pBuf++ = val;
-              w -= 8;
-              }
-           while(w >= 8);
-           }
+        while(w >= 8);
         }
    if (w) {
       mod = w % 8;
       static uint8_t postmask[8] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
       register uint8_t mask = postmask[mod];
-      switch(color) {
-         case WHITE:   *pBuf |=  mask;  break;
-         case BLACK:   *pBuf &= ~mask;  break;
-         case INVERSE: *pBuf ^=  mask;  break;
-         }
+      if (color > 7)
+         *pBuf |=  mask;
+      else
+         *pBuf &= ~mask;
       }
   #endif
 }
@@ -414,6 +402,7 @@ void SSD1322::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h, uint16_
      register uint8_t* pBuf = buffer;
      pBuf += (x >> 1) + (y  * (LCD_WIDTH / 2));
 
+     color &= 0x0F;
      register uint8_t mask = ((x % 2) ? color : color << 4);
      while(h--) {
         register uint8_t b1 = *pBuf;
@@ -429,11 +418,10 @@ void SSD1322::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h, uint16_
      register uint8_t mask = postmask[mod];
 
      while(h--) {
-        switch(color) {
-           case WHITE:    *pBuf |=  mask;   break;
-           case BLACK:    *pBuf &= ~mask; break;
-           case INVERSE:  *pBuf ^=  mask; break;
-           }
+        if (color > 7)
+           *pBuf |=  mask;
+        else
+           *pBuf &= ~mask;
         pBuf += LCD_WIDTH / 8;
         }
   #endif
@@ -531,12 +519,13 @@ void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
 
 void SSD1322::fillScreen(uint16_t color) {
   #if (BITS_PER_PIXEL == 1)
-     if (color > 0)
+     if (color > 7)
         memset(buffer, 0xFF, sizeof(buffer));
      else
         memset(buffer, 0x00, sizeof(buffer));
   #elif (BITS_PER_PIXEL == 4)
-     memset(buffer, (color & 0x0F), sizeof(buffer));
+     uint8_t color16 = (color & 0x0F);
+     memset(buffer, (color16 << 4) | color16, sizeof(buffer));
   #endif
 }
 
