@@ -288,7 +288,45 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
      return;
 
   // set up the pointer for  movement through the buffer
-  #if (BITS_PER_PIXEL == 4)
+  #if (BITS_PER_PIXEL == 1)
+     register uint8_t* pBuf = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
+     register uint8_t mod = (x % 8);
+     if (mod) {
+        mod = 8-mod;
+        static uint8_t premask[8] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F };
+        register uint8_t mask = premask[mod];
+        if (w < mod) {
+           mask &= (0XFF << (mod - w));
+           }
+        if (color > 7)
+           *pBuf |=  mask;
+        else
+           *pBuf &= ~mask;
+        if (w < mod)
+           return;
+        w -= mod;
+        pBuf++;
+        }
+
+     // write solid bytes while we can - effectively doing 8 rows at a time
+     if (w >= 8) {
+        register uint8_t val = (color > 7) ? 255 : 0;
+        do {
+           *pBuf++ = val;
+           w -= 8;
+           }
+        while(w >= 8);
+        }
+   if (w) {
+      mod = w % 8;
+      static uint8_t postmask[8] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
+      register uint8_t mask = postmask[mod];
+      if (color > 7)
+         *pBuf |=  mask;
+      else
+         *pBuf &= ~mask;
+      }
+  #elif (BITS_PER_PIXEL == 4)
      // adjust the buffer pointer for the current row
      register uint8_t* pBuf = buffer;
      pBuf += (x >> 1) + (y * (LCD_WIDTH / 2));
@@ -337,44 +375,6 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
         *pBuf++ = b1 | evenmask;
         return;
         }
-  #elif (BITS_PER_PIXEL == 1)
-     register uint8_t* pBuf = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
-     register uint8_t mod = (x % 8);
-     if (mod) {
-        mod = 8-mod;
-        static uint8_t premask[8] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F };
-        register uint8_t mask = premask[mod];
-        if (w < mod) {
-           mask &= (0XFF << (mod - w));
-           }
-        if (color > 7)
-           *pBuf |=  mask;
-        else
-           *pBuf &= ~mask;
-        if (w < mod)
-           return;
-        w -= mod;
-        pBuf++;
-        }
-
-     // write solid bytes while we can - effectively doing 8 rows at a time
-     if (w >= 8) {
-        register uint8_t val = (color > 7) ? 255 : 0;
-        do {
-           *pBuf++ = val;
-           w -= 8;
-           }
-        while(w >= 8);
-        }
-   if (w) {
-      mod = w % 8;
-      static uint8_t postmask[8] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
-      register uint8_t mask = postmask[mod];
-      if (color > 7)
-         *pBuf |=  mask;
-      else
-         *pBuf &= ~mask;
-      }
   #endif
 }
 
