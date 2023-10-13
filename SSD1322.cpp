@@ -275,25 +275,18 @@ void SSD1322::invertDisplay(bool i) {
 /*******************************************************************************
  * private internals.
  ******************************************************************************/
-void SSD1322::horizontal_line(int16_t x, int16_t y, int16_t w, uint16_t color) {
-  if (y < 0 || y >= HEIGHT)
+void SSD1322::horizontal_line(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
+  if (y >= HEIGHT)
      return;
-
-  // make sure we don't try to draw below 0
-  if (x < 0) {
-     w += x;
-     x = 0;
-     }
 
   // make sure we don't go off the edge of the display
   if ((x + w) > WIDTH)
      w = (WIDTH - x);
 
-  // if our width is now negative, punt
-  if (w <= 0)
+  // check, if we really fixed it
+  if ((x + w) > WIDTH)
      return;
 
-  // set up the pointer for  movement through the buffer
   #if (BITS_PER_PIXEL == 1)
      register uint8_t* p = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
      register uint8_t mod = (x % 8);
@@ -383,24 +376,16 @@ void SSD1322::horizontal_line(int16_t x, int16_t y, int16_t w, uint16_t color) {
   #endif
 }
 
-void SSD1322::vertical_line(int16_t x, int16_t Y, int16_t H, uint16_t color) {
-  if (x < 0 || x >= WIDTH)
+void SSD1322::vertical_line(uint8_t x, uint8_t y, uint8_t h, uint8_t color) {
+  if (x >= WIDTH)
      return;
 
-  if (Y < 0) {
-     H += Y;
-     Y = 0;
-     }
+  if ((y + h) > HEIGHT)
+     h = (HEIGHT - y);
 
-  if ((Y + H) > HEIGHT)
-     H = (HEIGHT - Y);
-
-  if (H <= 0)
+  // check, if we really fixed it
+  if ((y + h) > HEIGHT)
      return;
-
-  // this display doesn't need ints for coordinates, use local byte registers for faster juggling
-  register uint8_t y = Y;
-  register uint8_t h = H;
 
   #if (BITS_PER_PIXEL == 1)
      register uint8_t* p = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
@@ -478,7 +463,7 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
 
 void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
   color &= 0x0F;
-  uint8_t X = x & 0xFF, Y = y & 0xFF, H = h & 0xFF; // limit to byte range
+  uint8_t X = x & 0xFF, Y = y & 0xFF, W = w & 0xFF; // limit to byte range
 
   switch(rotation) {
      case 0:
@@ -561,7 +546,7 @@ void SSD1322::update(void) {
      uint16_t srcIndex = 0;
      while(srcIndex < bufSize) {
         uint8_t destIndex = 0;
-        uint8_t destArray[64] = {0};
+        uint8_t destArray[64];
 
         while(destIndex < 64) {
            uint8_t mask = 0x80;

@@ -39,8 +39,8 @@ private:
   void Data(uint8_t data);
   void DataBytes(uint8_t* buf, uint32_t size);
 
-  inline void horizontal_line(int16_t x, int16_t y, int16_t w, uint16_t color) __attribute__((always_inline));
-  inline void vertical_line  (int16_t x, int16_t y, int16_t h, uint16_t color) __attribute__((always_inline));
+  inline void horizontal_line(uint8_t x, uint8_t y, uint8_t w, uint8_t color) __attribute__((always_inline));
+  inline void vertical_line  (uint8_t x, uint8_t y, uint8_t h, uint8_t color) __attribute__((always_inline));
 
 public:
   /*****************************************************************************
