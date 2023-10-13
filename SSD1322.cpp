@@ -554,11 +554,9 @@ void SSD1322::update(void) {
   Command(WRITE_RAM);
 
   register uint32_t bufSize = sizeof(buffer); // bytes
-  register uint8_t* pBuf = buffer;
+  register uint8_t* p = buffer;
 
-  #if (BITS_PER_PIXEL == 4)
-     DataBytes(pBuf, bufSize);
-  #elif (BITS_PER_PIXEL == 1)
+  #if (BITS_PER_PIXEL == 1)
      uint16_t srcIndex = 0;
      while(srcIndex < bufSize) {
         uint8_t destIndex = 0;
@@ -567,9 +565,9 @@ void SSD1322::update(void) {
         while(destIndex < 64) {
            uint8_t mask = 0x80;
            while(mask > 0) {
-              destArray[destIndex] |= (pBuf[srcIndex] & mask) ? 0xf0 : 0x00;
+              destArray[destIndex] |= (p[srcIndex] & mask) ? 0xF0 : 0x00;
               mask >>= 1;
-              destArray[destIndex] |= (pBuf[srcIndex] & mask) ? 0x0f : 0x00;
+              destArray[destIndex] |= (p[srcIndex] & mask) ? 0x0F : 0x00;
               destIndex++;
               mask >>= 1;
               }
@@ -577,6 +575,8 @@ void SSD1322::update(void) {
            }
         DataBytes(destArray, 64);
         }
+  #elif (BITS_PER_PIXEL == 4)
+     DataBytes(p, bufSize);
   #endif
 }
 
