@@ -378,24 +378,24 @@ void SSD1322::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t co
   #endif
 }
 
-void SSD1322::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h, uint16_t color) {
+void SSD1322::drawFastVLineInternal(int16_t x, int16_t Y, int16_t H, uint16_t color) {
   if (x < 0 || x >= WIDTH)
      return;
 
-  if (__y < 0) {
-     __h += __y;
-     __y = 0;
+  if (Y < 0) {
+     H += Y;
+     Y = 0;
      }
 
-  if ((__y + __h) > HEIGHT)
-     __h = (HEIGHT - __y);
+  if ((Y + H) > HEIGHT)
+     H = (HEIGHT - Y);
 
-  if (__h <= 0)
+  if (H <= 0)
      return;
 
   // this display doesn't need ints for coordinates, use local byte registers for faster juggling
-  register uint8_t y = __y;
-  register uint8_t h = __h;
+  register uint8_t y = Y;
+  register uint8_t h = H;
 
   #if (BITS_PER_PIXEL == 1)
      register uint8_t* p = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
