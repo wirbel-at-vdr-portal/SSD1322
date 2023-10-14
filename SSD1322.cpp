@@ -276,15 +276,7 @@ void SSD1322::invertDisplay(bool i) {
  * private internals.
  ******************************************************************************/
 void SSD1322::horizontal_line(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
-  if (y >= HEIGHT)
-     return;
-
-  // make sure we don't go off the edge of the display
-  if ((x + w) > WIDTH)
-     w = (WIDTH - x);
-
-  // check, if we really fixed it
-  if ((x + w) > WIDTH)
+  if (x >= WIDTH or y >= HEIGHT or (x + w) > WIDTH)
      return;
 
   #if (BITS_PER_PIXEL == 1)
@@ -292,7 +284,7 @@ void SSD1322::horizontal_line(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
      register uint8_t mod = (x % 8);
      if (mod) {
         mod = 8-mod;
-        static uint8_t premask[8] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F };
+        static uint8_t premask[8] = { 0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F };
         register uint8_t mask = premask[mod];
         if (w < mod) {
            mask &= (0XFF << (mod - w));
@@ -318,7 +310,7 @@ void SSD1322::horizontal_line(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
         }
    if (w) {
       mod = w % 8;
-      static uint8_t postmask[8] = {0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
+      static uint8_t postmask[8] = { 0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
       register uint8_t mask = postmask[mod];
       if (color > 7)
          *p |=  mask;
@@ -326,7 +318,6 @@ void SSD1322::horizontal_line(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
          *p &= ~mask;
       }
   #elif (BITS_PER_PIXEL == 4)
-     // adjust the buffer pointer for the current row
      register uint8_t* p = buffer;
      p += (x >> 1) + (y * (LCD_WIDTH / 2));
 
@@ -357,12 +348,13 @@ void SSD1322::horizontal_line(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
         while(byteLen--)
            *p++ = fullmask;
         register uint8_t b1 = *p;
-        b1 &= 0x0F; // cleardown nibble to be replaced
+        b1 &= 0x0F; // clear nibble to be updated
         *p++ = b1 | evenmask;
         return;
         }
 
-     if (((x % 2) == 1) && ((w % 2) == 0)) { // Start at odd and length is even
+     if (((x % 2) == 1) && ((w % 2) == 0)) {
+        // Start at odd and length is even
         register uint8_t b1 = *p;
         b1 &= (x % 2) ? 0xF0 : 0x0F;
         *p++ = b1 | oddmask;
@@ -377,21 +369,14 @@ void SSD1322::horizontal_line(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
 }
 
 void SSD1322::vertical_line(uint8_t x, uint8_t y, uint8_t h, uint8_t color) {
-  if (x >= WIDTH)
-     return;
-
-  if ((y + h) > HEIGHT)
-     h = (HEIGHT - y);
-
-  // check, if we really fixed it
-  if ((y + h) > HEIGHT)
+  if (x >= WIDTH or y >= HEIGHT or (y + h) > HEIGHT)
      return;
 
   #if (BITS_PER_PIXEL == 1)
      register uint8_t* p = &buffer[(x >> 3) + (y * (LCD_WIDTH / 8))];
      register uint8_t mod = (x % 8);
 
-     static uint8_t postmask[8] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+     static uint8_t postmask[8] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
      register uint8_t mask = postmask[mod];
 
      while(h--) {
@@ -423,6 +408,10 @@ void SSD1322::vertical_line(uint8_t x, uint8_t y, uint8_t h, uint8_t color) {
  ******************************************************************************/
 void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
   color &= 0x0F;
+
+  if (x < 0 or y < 0 or h < 0)
+     return;
+
   uint8_t X = x & 0xFF, Y = y & 0xFF, H = h & 0xFF; // limit to byte range
 
   switch(rotation) {
@@ -463,6 +452,10 @@ void SSD1322::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
 
 void SSD1322::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
   color &= 0x0F;
+
+  if (x < 0 or y < 0 or w < 0)
+     return;
+
   uint8_t X = x & 0xFF, Y = y & 0xFF, W = w & 0xFF; // limit to byte range
 
   switch(rotation) {
@@ -546,7 +539,7 @@ void SSD1322::update(void) {
      uint16_t srcIndex = 0;
      while(srcIndex < bufSize) {
         uint8_t destIndex = 0;
-        uint8_t destArray[64];
+        uint8_t destArray[64] = {0};
 
         while(destIndex < 64) {
            uint8_t mask = 0x80;
