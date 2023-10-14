@@ -1,6 +1,11 @@
 # About this library
 
 This library is for 3.2 inch SSD1322 256x64 16-color gray scale OLEDs.
+
+![alt text](doc/pic.jpg)
+
+Display update rate on Teensy is really fast, i didn't notice any flickering.
+
 It is based on the [Adafruit GFX Graphics Library](https://learn.adafruit.com/adafruit-gfx-graphics-library/overview), so read the documentation there.
 
 The lib is loosely adopted from other Adafruit GFX based libraries and optimized to just contain as much code as necessary.
@@ -35,7 +40,6 @@ Do not connect to 5V based Arduinos, i'm using an Teensy 3.2
 |  14   | D/C   | H/L         | H: data, L:command          | green        |
 |  15   | /RST  | H/L         | L: reset                    | violet       |
 |  16   | /CS   | H/L         | L: select SSD1322           | gray         |
-
 
 have phun,
 
